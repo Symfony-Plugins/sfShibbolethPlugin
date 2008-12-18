@@ -187,8 +187,9 @@ techniques first before reading further.
   user records without a domain:
 
 
-        all:
-          domain: yourschool.edu
+        prod:
+          sfShibboleth:
+            domain: yourschool.edu
 
 
   * Clear your cache:
