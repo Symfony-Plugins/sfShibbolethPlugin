@@ -1,0 +1,14 @@
+fillin:
+  enabled: true
+
+fields:
+  email:
+    required: yes
+      msg: "You must provide a valid email address in order to participate. Your email address must be complete. Example: example@example.com"
+    emailValidator:
+      msg: "You must provide a valid email address in order to participate. Your email address must be complete. Example: example@example.com"
+
+validators:
+  emailValidator:
+    class: sfEmailValidator
+    strict: true

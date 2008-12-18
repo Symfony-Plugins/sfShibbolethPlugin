@@ -1,0 +1,6 @@
+register:
+  is_secure: on
+
+logout:
+  is_secure: on
+

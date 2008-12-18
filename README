@@ -1,0 +1,472 @@
+# sfShibbolethPlugin
+
+sfShibbolethPlugin adds Shibboleth authentication to a Symfony project.
+sfShibbolethPlugin is built on top of sfDoctrineGuardPlugin, so code designed 
+for that plugin should play nicely with sfShibbolethPlugin. Refer to the
+documentation of that plugin for the basics.
+
+If you do not yet know how to set up the Shibboleth Apache module to
+protect a portion of or the entirety of a web site, please review those 
+techniques first before reading further. 
+
+## Installation 
+
+  * Install sfDoctrineGuardPlugin
+
+
+        symfony plugin-install http://plugins.symfony-project.com/sfDoctrineGuardPlugin
+
+
+  * Install sfShibbolethPlugin
+
+
+        symfony plugin-install http://plugins.symfony-project.com/sfShibbolethPlugin
+
+
+  * Follow the instructions in the sfDoctrineGuardPlugin README to update your
+  database tables correctly. You do NOT have to load the sfDoctrineGuardPlugin 
+  fixtures files, we take a different approach to the "chicken and egg
+  problem" of the initial superadmin user.
+
+  * Enable the sfShibbolethAuth module in your application via settings.yml.
+  You may need to list other modules too, like the default module:
+
+        all:
+          .settings:
+            enabled_modules:      [default, sfShibbolethAuth]
+
+
+  *Don't* enable sfShibbolethDemoHome, unless you specifically wish to
+  set up a simple test application for this plugin. Details on how to do
+  that are provided later in this article. You are more likely to
+  borrow code from it as a skeleton for your own home module.
+
+  You may also wish to enable the various sfGuard admin modules in a backend
+  application: 
+
+
+        all:
+          .settings:
+            enabled_modules:      [default, sfShibbolethAuth, sfGuardGroup, sfGuardUser, sfGuardPermission]
+
+
+  Since you are using Shibboleth logins, you should NOT enable the 
+  sfGuardAuth module. 
+
+  * Enable sfShibbolethFilter and sfShibbolethSecurityFilter in `filters.yml`. 
+  This is REQUIRED, otherwise Shibboleth users won't be reconciled with 
+  sfGuard users and won't be seen as logged in by Symfony:
+
+        shibboleth:
+          class: sfShibbolethFilter
+        security:
+          class: sfShibbolethSecurityFilter
+
+
+  * Change the default login action in `settings.yml`
+
+
+        login_module:           sfShibbolethAuth
+        login_action:           login
+
+
+  * You will also want to change the "secure action" to an action
+  of your own that explains that although the user is logged in,
+  he or she does not have the appropriate privileges. Something
+  like this (but use YOUR OWN action):
+
+
+        secure_module:          mymodule
+        secure_action:          secure
+
+
+  You can use the default Symfony action for this purpose until you
+  have time to do something classier.
+
+  * Change the parent class in `myUser.class.php`
+
+
+        class myUser extends sfGuardSecurityUser
+        {
+        }
+
+
+  * Secure some modules or your entire application in `security.yml`.
+  Even if you plan to configure the Apache Shibboleth module to secure the 
+  entire site, you should still set up a rule like this one so that the
+  "fake shibboleth" test feature behaves as you expect:
+
+
+        default:
+          is_secure: on
+
+
+  * In most cases you'll be securing either the entire site or 
+  the entire secure version of the site (that is, https URLs) with
+  Shibboleth. sfShibbolethPlugin can handle both of these scenarios, and
+  can also cope when only the /sfShibbolethAuth folder is secured
+  directly. Regardless of which strategy you choose at the
+  Shibboleth level, you can still choose to secure or not secure individual 
+  actions and modules throughout the site via `security.yml` files at any 
+  level. This allows parts of your site (typically accessed via
+  regular http URLs) to be open to the public while other actions require
+  logging in. This is a good way to make some content indexable by Google
+  and give users a taste before they go through the annoyance of logging in.
+
+  * Configure your application to offer a selection of test users
+  which you can access on your non-Shibboleth-protected, more convenient
+  development site when you are using the dev frontend controller
+  (frontend_dev.php). Also specify the test user who will always have
+  superadmin access (addressing the "chicken and egg problem" of performing
+  admin actions for the first time):
+
+
+        dev:
+          sfShibboleth:
+            superadmin: superadmin
+            fake: true
+            fake_users:
+              superadmin:
+                display_name: Super Admin
+              user1:
+                display_name: User One
+              user2:
+                display_name: User Two
+              user3:
+                display_name: User Three
+              user4:
+                display_name: User Four
+              user5:
+                display_name: User Five
+              user6:
+                display_name: User Six
+              user7:
+                display_name: User Seven
+
+
+  sfShibbolethPlugin will offer a menu of these users when you log in
+  via a development controller (that is, frontend_dev.php). 
+
+  You should *never* enable "fake: true" on a production server. We
+  recommend adding web/frontend_dev.php to your config/rsync_exclude.txt so
+  that the production server has no development frontend through which
+  this possibility could be exploited. Alternatively, use a separate
+  app.yml on the production server in which `fake: false` is set for
+  both the production and the development frontends.
+
+  * Set up the production side of app.yml to use real Shibboleth, and
+  specify the URL that logs users out of Shibboleth:
+
+
+        prod:
+          sfShibboleth:
+            fake: false
+            logout: "https://mysite/Shibboleth.sso/Logout"
+
+
+  *Important:* /Shibboleth.sso/Logout is standard practice at the organization 
+  where we've done most of our Shibboleth work, but it may not be for yours. 
+  Check with your organization's IT staff.
+
+  * If your site is accessible through both http and https URLs, and
+  Shibboleth is directly protecting the secure side only, you'll
+  need to make sfShibbolethPlugin aware of that so that users can
+  be redirected to the secure server if and when they need to log in:
+
+        prod:
+          sfShibboleth:
+            fake: false
+            logout: "https://mysite/Shibboleth.sso/Logout"
+            login_on_secure: true
+
+  * Specify the name of your Shibboleth domain. This provides forwards and
+  backwards compatibility with newer Shibboleth environments in which
+  REMOTE_USER will contain a domain name (example: user@school.edu). Names
+  that arrive without a domain are considered to be in this domain, and
+  names that do contain this domain are considered to match any existing
+  user records without a domain:
+
+
+        all:
+          domain: yourschool.edu
+
+
+  * Clear your cache:
+
+
+        symfony cc
+
+
+  * When you are ready to configure a production server or staging 
+  server on which Shibboleth is available, configure Apache to protect
+  either the entire site or URLs beginning with /sfShibbolethAuth. The
+  advantage of the latter is that you can decide whether to secure
+  individual actions as described above, and sfShibbolethPlugin will force
+  users to use your Shibboleth webauth page to log in only for those
+  actions. Here is an example of the appropriate Apache directive
+  (note that you need to do MUCH MORE than this to create a complete
+  Shibboleth environment, this is only the last mile of that road):
+
+
+      <Location /sfShibbolethAuth>
+        AuthType shibboleth
+        ShibRequireSession On
+        require valid-user
+      </Location>  
+
+
+  Note: in almost all cases this will be done in the configuration for
+  the secure (https) version of your site. If your site also allows
+  non-secure access, be sure to set the `login_on_secure` option as
+  described earlier.
+
+  Note that you can skip this step during the development stages and just use
+  the "fake Shibboleth" test users. This is extremely useful for developing
+  Shibboleth-protected sites on your own workstation.
+
+  * You're ready to go. However, there are two more major features
+  you will almost certainly want, so I suggest that you keep reading.
+
+## Obtaining Display Names From Shibboleth 
+
+Shibboleth offers more than just a "netid", aka username. Most 
+Shibboleth environments potentially offer the user's display name
+as well. 
+
+sfShibbolethPlugin can obtain this information for you and automatically
+add it to the user's sfGuardProfile, provided that:
+
+* You add the appropriate field to your sf_guard_profile entry
+  in schema.yml, like so:
+
+        display_name: varchar(128)
+
+* You are able to convince your Shibboleth data providers to 
+  enable the inetorgperson_displayname attribute for your server
+  (this part is politics, not PHP; you'll have to make the case
+  as to why your application should have access to display names), and
+
+* That data is actually showing up in the HTTP_SHIB_INETORGPERSON_DISPLAYNAME
+  PHP environment variable. This is up to the person configuring your
+  particular Apache server as a Shibboleth service provider.
+
+Note: if you *do* have HTTP_SHIB_INETORGPERSON_DISPLAYNAME, you
+currently *must* have a display_name attribute for sf_guard_profile.
+Otherwise errors will occur. 
+
+"What about picking up other attributes from Shibboleth?" Yeah, that'd
+be nice wouldn't it! Also, the environment variables should be
+specified in app.yml. Submit a patch and I'll be glad to add it.
+
+## Registration: Obtaining Additional Information From the User
+
+Shibboleth gives you a username, and perhaps a display name. But in
+all probability you need more information to create an acceptable
+user profile for your site. In most cases, you'll want an email
+address. And even if that informaton is accessible to you via
+Shibboleth, the user might not want to use their official University
+email address of record or this particular site... et cetera.
+
+The solution? Write a registration action. The registration action
+displays a "settings" form to the user, allowing them to enter
+their preferred email address and any other additional information
+your site requires from a first-time visitor before allowing them
+to continue. 
+
+Before you code your registration action, you need a way to determine
+whether the user's profile is already complete. You should do this
+by adding a `registrationIsComplete` method to your
+version of the `myUser` class. Consider this example:
+
+
+    class myUser extends sfGuardSecurityUser
+    {
+      public function registrationIsComplete()
+      {
+        $profile = $this->getProfile();
+        if (!strlen($profile->getEmail())) {
+          return false;
+        }
+        return true;
+      }
+    }
+
+
+If `registrationIsComplete` returns true, the user is permitted
+to continue using the site right away. If it returns false, the
+user will be forced to complete the registration action before
+they are continue.
+
+"So how do I set up my registration action?" You can write your
+registration action as part of any module of your application.
+Just make sure you tell sfShibbolethFilter about it by adding
+the following to `app.yml`:
+
+
+    # My registration action is the register action in my home module
+    all:
+      sfShibboleth:
+        register_action: home/register
+
+
+### Actions that are exempt from registration 
+
+You can also specify additional actions that are exempt from
+registration. A logged-in user can access these without being forced to
+register first. You should keep this list short and restrict it only
+to actions that are additional pieces of your registration form- this
+is NOT a list of all of the public actions in your application! It is
+just for rare special cases in which a user who has authenticated via Shibboleth
+but does not yet have a complete profile should be allowed to access
+the action. 
+For instance, your registration process might involve multiple steps, 
+implemented by separate actions. Or you might have AJAX actions or
+CAPTCHA image generator actions that are part of your registration form's
+functionality.
+
+One common case is an action that allows the user to give up on 
+registration and log out right away. You can simply link to
+`sfShibbolethAuth/logout`, which is automatically exempt, but if
+you have additional cleanup to do, you might want to use an
+action of your own that runs first before redirecting there.
+
+To specify these "exempt" actions, just list them as part of the
+`register_exempt` array:
+
+
+    # My registration action is the register action in my home module
+    all:
+      sfShibboleth:
+        register_action: home/register
+        register_exempt:
+          - home/logout
+
+
+## A simple demo 
+  Try enabling the sfShibbolethDemoHome module and setting up
+  app.yml as follows:
+
+
+    prod:
+      sfShibboleth:
+        fake: false
+        # In our Shibboleth/Apache configuration, redirecting to this URL
+        # de-authenticates the user. Perhaps that's done differently on
+        # your server. In that case, change this setting.
+        logout: /Shibboleth.sso/Logout
+
+    dev:
+      sfShibboleth:
+        superadmin: superadmin
+        fake: true
+        fake_users:
+          superadmin:
+            display_name: Super Admin
+          user1:
+            display_name: User One
+          user2:
+            display_name: User Two
+          user3:
+            display_name: User Three
+          user4:
+            display_name: User Four
+          user5:
+            display_name: User Five
+          user6:
+            display_name: User Six
+          user7:
+            display_name: User Seven
+
+    all:
+      sfShibboleth:
+        register_action: sfShibbolethDemoHome/register
+        register_exempt: 
+          - sfShibbolethDemoHome/logout
+        domain: YOURshibbolethdomain.edu
+
+
+You'll also need these routing rules in `routing.yml`:
+
+
+    # Rules for our example shibboleth-guarded site
+
+    homepage:
+      url:   /
+      param: { module: sfShibbolethDemoHome, action: index }
+
+    login:
+      url:   /login
+      param: { module: sfShibbolethDemoHome, action: login }
+
+    logout:
+      url:   /logout
+      param: { module: sfShibbolethDemoHome, action: logout }
+
+    register:
+      url:   /register
+      param: { module: sfShibbolethDemoHome, action: register }
+
+
+This gives you a very, very boring site which is fully protected
+by sfShibbolethPlugin. You can log in, register to provide your
+email address, log out, edit your settings, and see evidence that
+the settings are known to the index module. 
+
+A more practical suggestion: copy sfShibbolethDemoHome's actions
+to your own application module as a starting point.
+
+## TODO
+
+  * Add support for more Shibboleth attributes, such as
+  separate first and last name fields, email addresses and so on
+  * Add explicit support for basic authentication, since Shibboleth acts
+  as a superset of basic authentication anyway (using sfShibbolethFilter 
+  for basic authentication probably already works, but I haven't tried it; 
+  also keep in mind that there is no real support for logouts in 
+  basic auth, ever)
+
+## Contact 
+
+  sfShibbolethPlugin was created at P'unk Ave, LLC. 
+  Questions and comments may be addressed to Tom Boutell, tom@punkave.com.
+
+## Changelog 
+
+### 0.3
+
+  Version 0.3 is intended for use with Symfony 1.2 and Doctrine.
+  We're moving to Doctrine because of its brevity, generality and
+  overall flexibility, in addition to documentation that greatly
+  exceeds the quality of the Propel documentation. We're moving
+  to Symfony 1.2 because 1.2 is the current stable version of Symfony.
+   
+### 0.2
+  
+  Addition of the sfShibbolethSecurityFilter and the login_on_secure
+  option. Those who are upgrading should read the above material carefully
+  for more information about these changes, especially 
+  sfShibbolethSecurityFilter which must be enabled correctly for
+  the plugin to work.
+
+### 0.14
+
+  * @homepage rather than / as a default destination for various redirects.
+  / fails in some cases, while @homepage is standard equipment.
+
+### 0.13 
+
+  * Resolved the last of the Markdown Mysteries. No code changes. Thanks
+  to Fabien for pointing out a goof on my part.
+
+### 0.12 
+
+  * More Markdown fun with the README. No code changes.
+
+### 0.11
+
+  * Trying to make Markdown happy with the README. No code changes.
+
+### 0.1 
+
+  * First release.
+

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package packagerversion="1.5.1" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd  http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+ <name>sfShibbolethPlugin</name>
+ <channel>pear.symfony-project.com</channel>
+ <summary>Adds support for Shibboleth authentication to sfGuardPlugin</summary>
+ <description>Adds support for Shibboleth authentication to the sfGuardPlugin's
+ already excellent user management features. Developers in academic and other
+ environments where Shibboleth is used will find this plugin useful. Users are
+ logged in via Shibboleth and mapped to an sfGuard user, which is created
+ if necessary. Users are also directed to a registration page if the 
+ application needs to gather additional information not provided by
+ Shibboleth before proceeding, such as the user's email address. A simple
+ demo application is provided. 
+ </description>
+ <lead>
+  <name>Tom Boutell</name>
+  <user>boutell</user>
+  <email>tom@punkave.com</email>
+  <active>yes</active>
+ </lead>
+ <date>2008-09-10</date>
+ <time>14:00:00</time>
+ <version>
+  <release>0.2.0</release>
+  <api>0.2.0</api>
+ </version>
+ <stability>
+  <release>beta</release>
+  <api>beta</api>
+ </stability>
+ <license uri="http://www.symfony-project.com/license">MIT license</license>
+ <notes>-</notes>
+ <contents>
+  <dir name="/">
+   <file role="data" name="package.xml" />
+   <dir name="modules">
+    <dir name="sfShibbolethDemoHome">
+     <dir name="validate">
+      <file role="data" name="register.yml" />
+     </dir>
+     <dir name="actions">
+      <file role="data" name="actions.class.php" />
+     </dir>
+     <dir name="templates">
+      <file role="data" name="secureSuccess.php" />
+      <file role="data" name="indexSuccess.php" />
+      <file role="data" name="logoutSuccess.php" />
+      <file role="data" name="registerSuccess.php" />
+     </dir>
+     <dir name="config">
+      <file role="data" name="security.yml" />
+     </dir>
+     <dir name="lib">
+     </dir>
+    </dir>
+    <dir name="sfShibbolethAuth">
+     <dir name="validate">
+     </dir>
+     <dir name="actions">
+      <file role="data" name="actions.class.php" />
+     </dir>
+     <dir name="templates">
+      <file role="data" name="loginSuccess.php" />
+      <file role="data" name="loginMisconfigured.php" />
+     </dir>
+     <dir name="config">
+     </dir>
+     <dir name="lib">
+     </dir>
+    </dir>
+   </dir>
+   <file role="data" name="README" />
+   <dir name="config">
+   </dir>
+   <dir name="lib">
+    <file role="data" name="sfShibbolethSecurityFilter.class.php" />
+    <file role="data" name="sfShibbolethTools.class.php" />
+    <file role="data" name="sfShibbolethFilter.class.php" />
+   </dir>
+   <file role="data" name="LICENSE" />
+  </dir>
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>5.0.0</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.1</min>
+   </pearinstaller>
+   <package>
+    <name>symfony</name>
+    <channel>pear.symfony-project.com</channel>
+    <min>1.0.0</min>
+    <max>1.1.0</max>
+    <exclude>1.1.0</exclude>
+   </package>
+   <package>
+    <name>sfGuardPlugin</name>
+    <channel>pear.symfony-project.com</channel>
+    <min>1.1.15</min>
+    <max>2.0.0</max>
+    <exclude>2.0.0</exclude>
+   </package>
+  </required>
+ </dependencies>
+ <phprelease />
+ <changelog />
+</package>
+
+
