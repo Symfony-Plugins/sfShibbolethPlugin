@@ -16,7 +16,7 @@ generator:
         title:   User list
         display: [=username, created_at, updated_at, last_login]
       form:
-        class: sfShibbolethUserAdminForm
+        class: sfGuardUserAdminForm
         display:
           "NONE":                   [username]
           "Permissions and groups": [is_active, is_super_admin, groups_list, permissions_list]

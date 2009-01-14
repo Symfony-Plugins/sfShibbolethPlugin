@@ -14,4 +14,13 @@ require_once dirname(__FILE__).'/../lib/sfShibbolethUserGeneratorHelper.class.ph
  */
 class sfShibbolethUserActions extends BasesfShibbolethUserActions
 {
+  protected function processForm(sfWebRequest $request, sfForm $form)
+  {
+		$fields = $request->getParameter($form->getName());
+		$fields['password'] = sfShibbolethTools::generatePassword();
+		$fields['password_again'] = $fields['password'];
+		$request->setParameter($form->getName(), $fields);
+
+		parent::processForm($request, $form);
+	}
 }
