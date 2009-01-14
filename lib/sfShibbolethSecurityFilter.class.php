@@ -15,17 +15,6 @@
  * file that was distributed with this source code.
  */
 
-/**
- * sfBasicSecurityFilter checks security by calling the getCredential() method
- * of the action. Once the credential has been acquired, sfBasicSecurityFilter
- * verifies the user has the same credential by calling the hasCredential()
- * method of SecurityUser.
- *
- * @package    symfony
- * @subpackage filter
- * @author     Sean Kerr <sean@code-box.org>
- * @version    SVN: $Id: sfBasicSecurityFilter.class.php 7791 2008-03-09 21:57:09Z fabien $
- */
 class sfShibbolethSecurityFilter extends sfBasicSecurityFilter
 {
   /**
