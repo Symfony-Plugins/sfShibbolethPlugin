@@ -11,7 +11,8 @@ generator:
     with_doctrine_route:     1
 
     config:
-      fields: ~
+      actions: ~
+      fields:  ~
       list:
         title:   User list
         display: [=username, created_at, updated_at, last_login]
