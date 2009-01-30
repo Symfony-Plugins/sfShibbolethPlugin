@@ -112,6 +112,7 @@ class sfShibbolethAuthActions extends sfActions
     // @homepage works, / doesn't (at least not in all routing setups) 
     return $this->redirect('@homepage');
   }
+
   private function enforceLoginOnSecure()
   {
     if (sfConfig::get('app_sfShibboleth_login_on_secure', false))
@@ -119,8 +120,9 @@ class sfShibbolethAuthActions extends sfActions
       $request = $this->getRequest();
       if (!$request->isSecure())
       {
-        $url = $request->getUri();
-        $url = preg_replace("/^http:/", "https:", $url);
+				$controller = sfContext::getInstance()->getController();
+				$url = $controller->genUrl("sfShibbolethAuth/login", true);
+				$url = preg_replace("/^http:/", "https:", $url);
         return $this->redirect($url);
       }
       return false;
