@@ -28,7 +28,8 @@ class sfShibbolethFilter extends sfFilter
     $sfUser = $context->getUser();
 		$request = $context->getRequest();
    
-    if (sfConfig::get('app_sfShibboleth_fake', false)) {
+    if (sfConfig::get('app_sfShibboleth_fake', false)) 
+    {
       // Accept the fake shibboleth attributes and stuff them into the
       // environment so that the rest of the Shibboleth-related code is used
       // normally. This way we don't have to debug everything twice.
@@ -39,6 +40,24 @@ class sfShibbolethFilter extends sfFilter
       // If we let these linger they will screw up logout
       $sfUser->setAttribute('sfShibboleth_fake_user', null);
       $sfUser->setAttribute('sfShibboleth_fake_display_name', null);
+    }
+
+    if (sfConfig::get('app_sfShibboleth_shim', false))
+    {
+      if (isset($_SESSION['sfShibboleth_shim_user']))
+      {
+        // user attributes from the subfolder shim script. This allows the
+        // use of Shibboleth to protect a variety of sensitive activities 
+        // throughout the site without the need to apply the Shibboleth 
+        // login prompt to the entire site.
+        $_SERVER['REMOTE_USER'] = 
+          $_SESSION['sfShibboleth_shim_user'];
+        $_SERVER['HTTP_SHIB_INETORGPERSON_DISPLAYNAME'] = 
+          $_SESSION['sfShibboleth_shim_display_name'];
+        // If we let these linger they will screw up logout
+        unset($_SESSION['sfShibboleth_shim_user']);
+        unset($_SESSION['sfShibboleth_shim_display_name']);
+      }
     }
 
     if (!$sfUser->isAuthenticated())

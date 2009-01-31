@@ -70,7 +70,15 @@ class sfShibbolethAuthActions extends sfActions
     } else {
       if (!isset($_SERVER['REMOTE_USER'])) 
       {
-        return 'Misconfigured';
+        $shim = sfConfig::get('app_sfShibboleth_shim', false);
+        if ($shim)
+        {
+          return $this->redirect($shim);
+        }
+        else
+        {
+          return 'Misconfigured';
+        }
       }
     }
     # TBB: @homepage rather than /, which doesn't work properly

@@ -1,0 +1,37 @@
+PROBLEM: you want to use Shibboleth to protect only PART of your URL space,
+so that you can have non-authenticated interactions with users who
+are not yet part of your community.
+
+OBVIOUS SOLUTION: you've tried to set this up with a <Location /shibboleth> 
+block that only applies Shibboleth authentication to /shibboleth...
+
+But it doesn't work. The user is forced to log in, but Symfony
+never sees REMOTE_USER because Shibboleth is unimpressed by mod_rewrite
+and considers the front end controller to not be in /shibboleth. Ahrgh!
+
+CLEVER WORKAROUND: a real /shibboleth folder with a simple index.php script 
+that just requires the real front end controller from the parent folder... 
+after setting $_SERVER['REQUEST_URI'] to the URL of the sfShibbolethAuth/login
+action. When that action sees a good REMOTE_USER environment variable,
+it redirects away immediately, so the various potential problems of running the
+front end controller from the "wrong" folder are nonissues for us.
+
+Sure, it's ugly, but it works great. At least until someone finds a way
+to make the original, elegant, Apache conf-based solution work.
+
+HOW TO INSTALL: copy this folder to the subfolder of your web folder
+that matches the path you are protecting directly with Shibboleth.
+Then, in your web/.htaccess file, exempt that folder from the
+usual mod_rewrite rules like so:
+
+    # We skip the shibboleth shim script folder
+    RewriteCond %{REQUEST_URI} ^/shibboleth
+    RewriteRule .* - [L]
+
+Install these new rules AFTER these existing rules:
+
+    # we skip all files with .something, except .html
+    RewriteCond %{REQUEST_URI} \..+$
+    RewriteCond %{REQUEST_URI} !\.html$
+    RewriteRule .* - [L]
+
