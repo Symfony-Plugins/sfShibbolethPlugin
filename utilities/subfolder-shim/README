@@ -35,3 +35,15 @@ Install these new rules AFTER these existing rules:
     RewriteCond %{REQUEST_URI} !\.html$
     RewriteRule .* - [L]
 
+Then set the following in app.yml so that sfShibbolethPlugin will
+know to redirect users who are ready to authenticate to the special 
+controller in the shibbolized folder (substitute the folder you
+are directly shibbolizing if it's not /shibboleth):
+
+prod:
+  sfShibboleth:
+    shim: "https://yoursite/shibboleth"
+
+Note that if you have changed the URL of the sfShibbolethAuth/login action
+you will need to patch index.php in the /shibboleth folder accordingly.
+
