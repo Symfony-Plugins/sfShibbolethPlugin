@@ -11,10 +11,13 @@ and considers the front end controller to not be in /shibboleth. Ahrgh!
 
 CLEVER WORKAROUND: a real /shibboleth folder with a simple index.php script 
 that just requires the real front end controller from the parent folder... 
-after setting $_SERVER['REQUEST_URI'] to the URL of the sfShibbolethAuth/login
-action. When that action sees a good REMOTE_USER environment variable,
-it redirects away immediately, so the various potential problems of running the
-front end controller from the "wrong" folder are nonissues for us.
+after setting $_SERVER['REQUEST_URI'] and $_SERVER['PHP_SELF'] to the URL of 
+the sfShibbolethAuth/login action and scrubbing all references to
+/shibboleth, /shibboleth/ and /shibboleth/index.php from the 
+$_SERVER variables. When the sfShibbolethAuth/login action sees a good 
+REMOTE_USER environment variable, it redirects away immediately, 
+so the various potential problems of running the front end controller 
+from the "wrong" folder are nonissues for us.
 
 Sure, it's ugly, but it works great. At least until someone finds a way
 to make the original, elegant, Apache conf-based solution work.
@@ -44,6 +47,8 @@ prod:
   sfShibboleth:
     shim: "https://yoursite/shibboleth"
 
-Note that if you have changed the URL of the sfShibbolethAuth/login action
-you will need to patch index.php in the /shibboleth folder accordingly.
+Finally, change the redirect URL in the shim folder's index.php
+script to point wherever YOUR routing rules have put sfShibbolethAuth/login.
+With pkContextCMS it's typically /cms/sfShibbolethAuth/login. With
+no special routing rules in effect it'll be /sfShibbolethAuth/login.
 
