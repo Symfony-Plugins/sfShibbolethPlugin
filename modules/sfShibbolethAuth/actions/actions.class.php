@@ -33,6 +33,7 @@ class sfShibbolethAuthActions extends sfActions
       return;
     }
 
+    $sfUser = $this->getUser();
     // In production the only job of this action is to get shibbolized and
     // then redirect somewhere else. If you wish, use the 'shibboleth_after'
     // attribute to specify a 'somewhere' other than the home page.
@@ -41,8 +42,6 @@ class sfShibbolethAuthActions extends sfActions
     // this action lets the developer pick one of a number of
     // test users in a manner that exercises the code in 
     // the shibboleth filter just as much as real Shibboleth would.
-
-    $sfUser = $this->getUser();
 
     if (sfConfig::get('app_sfShibboleth_fake', false)) {
       // Let them pick a fake user
@@ -81,7 +80,11 @@ class sfShibbolethAuthActions extends sfActions
         }
       }
     }
-    # TBB: @homepage rather than /, which doesn't work properly
+    // DON'T try to set this to the referrer here. In a true
+    // Shibboleth environment, a redirect to Shibboleth will
+    // already have ruined that option. See sfShibbolethDemoHome for an
+    // example of how to correctly set this attribute in 
+    // YOUR OWN login action which then redirects to this action.
     $after = $sfUser->getAttribute('sfShibboleth_after', '@homepage');
     $sfUser->setAttribute('sfShibboleth_after', null);
     return $this->redirect($after);

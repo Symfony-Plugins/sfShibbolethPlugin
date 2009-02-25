@@ -26,7 +26,7 @@ class sfShibbolethSecurityFilter extends sfBasicSecurityFilter
   {
 	  // the user is not authenticated
 	  // TBB: save where we wanted to go
-    // ... But only if we haven't already done that s
+    // ... But only if we haven't already done that
     // (avoids redirect loop with shim)
     if (!$this->context->getUser()->hasAttribute('sfShibboleth_after'))
     {
