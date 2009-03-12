@@ -16,5 +16,5 @@ preserve the security of your site!
 <?php echo form_tag('sfShibbolethAuth/login') ?> 
 <?php echo select_tag('fake_user',
   options_for_select($options, false)) ?>
-<?php echo submit_tag('Go') ?>
+<?php echo submit_tag('Go', array("class" => "submit")) ?>
 </form>
