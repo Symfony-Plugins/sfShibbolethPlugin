@@ -113,9 +113,11 @@ class sfShibbolethAuthActions extends sfActions
       $sfUser->signOut();
     }
     if (!sfConfig::get('app_sfShibboleth_fake', false)) {
-      $to = sfConfig::get('app_sfShibboleth_logout');
-      return $this->redirect($to,
-        $this->getRequest()->getUriPrefix() . '/Shibboleth.sso/Logout');
+      $returnTo = $this->getController()->genUrl("@homepage", true);
+      $to = sfConfig::get('app_sfShibboleth_logout', 
+        $this->getRequest()->getUriPrefix() . '/Shibboleth.sso/Logout?returnto=_RETURNTO_');
+      $to = str_replace("_RETURNTO_", urlencode($returnTo), $to);
+      return $this->redirect($to);
     }
     $sfUser = $this->getUser();
     $sfUser->setAttribute('sf_shibboleth_fake_user', null);
