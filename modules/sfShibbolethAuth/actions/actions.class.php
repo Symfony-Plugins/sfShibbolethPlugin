@@ -72,6 +72,7 @@ class sfShibbolethAuthActions extends sfActions
         $shim = sfConfig::get('app_sfShibboleth_shim', false);
         if ($shim)
         {
+          $shim = str_replace("_HTTPHOST_", $_SERVER['HTTP_HOST'], $shim);
           return $this->redirect($shim);
         }
         else
@@ -116,7 +117,7 @@ class sfShibbolethAuthActions extends sfActions
       $returnTo = $this->getController()->genUrl("@homepage", true);
       $to = sfConfig::get('app_sfShibboleth_logout', 
         $this->getRequest()->getUriPrefix() . '/Shibboleth.sso/Logout?returnto=_RETURNTO_');
-      $to = str_replace("_RETURNTO_", urlencode($returnTo), $to);
+      $to = str_replace(array("_RETURNTO_", "_HTTPHOST_"), array(urlencode($returnTo), $_SERVER['HTTP_HOST']), $to);
       return $this->redirect($to);
     }
     $sfUser = $this->getUser();
