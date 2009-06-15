@@ -104,8 +104,8 @@ techniques first before reading further.
   * In most cases you'll be securing either the entire site or 
   the entire secure version of the site (that is, https URLs) with
   Shibboleth. sfShibbolethPlugin can handle both of these scenarios, and
-  can also cope when only the /sfShibbolethAuth folder is secured
-  directly. Regardless of which strategy you choose at the
+  can also cope when only the /shibboleth folder is secured
+  directly if you set up the provided shim script. Regardless of which strategy you choose at the
   Shibboleth level, you can still choose to secure or not secure individual 
   actions and modules throughout the site via `security.yml` files at any 
   level. This allows parts of your site (typically accessed via
@@ -113,6 +113,33 @@ techniques first before reading further.
   logging in. This is a good way to make some content indexable by Google
   and give users a taste before they go through the annoyance of logging in.
 
+  To implement this scenario, you'll need to configure Apache to secure only
+  the /shibboleth folder, and then copy the provided 
+  `utilities/subfolder-shim/index.php` script to `web/shibboleth/index.php`.
+  
+  That script exists because the Shibboleth Apache modules don't appear to be
+  capable of securing a virtual directory path. There must be a physical folder
+  corresponding to the path being secured. That means there must be a separate
+  script at that physical path to respond when a URL in that folder is
+  accessed. The subfolder-shim script "bootstraps" the user back into Symfony
+  by invoking the normal Symfony front-end controller in the folder above it.
+  
+  *Important*: the shim script itself does not have access to your Symfony 
+  routing rules. So it must make assumptions about what your routing rules
+  look like. As provided, the script assumes that you have mapped administrative
+  actions like logging into the CMS to URLs like `/cms/module/action`, which is
+  true in our recommended configuration for a CMS-dominated pkContextCMS site.
+  If your configuration is different, change the following settings 
+  accordingly:
+  
+  $_SERVER['REQUEST_URI'] = "/cms/sfShibbolethAuth/login";
+  $_SERVER['PHP_SELF'] = "/cms/sfShibbolethAuth/login";
+  
+  For instance, if you are using sfShibbolethPlugin without pkContextCMSPlugin,
+  you'll want to leave off the `/cms` prefix. If you have changed our suggested
+  routing rules for the CMS so that a different prefix is used for non-CMS
+  page actions, you'll need to use that prefix, and so on.
+  
   * Configure your application to offer a selection of test users
   which you can access on your non-Shibboleth-protected, more convenient
   development site when you are using the dev frontend controller
@@ -200,7 +227,7 @@ techniques first before reading further.
 
   * When you are ready to configure a production server or staging 
   server on which Shibboleth is available, configure Apache to protect
-  either the entire site or URLs beginning with /sfShibbolethAuth. The
+  either the entire site or URLs beginning with /shibboleth. The
   advantage of the latter is that you can decide whether to secure
   individual actions as described above, and sfShibbolethPlugin will force
   users to use your Shibboleth webauth page to log in only for those
@@ -209,7 +236,7 @@ techniques first before reading further.
   Shibboleth environment, this is only the last mile of that road):
 
 
-      <Location /sfShibbolethAuth>
+      <Location /shibboleth>
         AuthType shibboleth
         ShibRequireSession On
         require valid-user
