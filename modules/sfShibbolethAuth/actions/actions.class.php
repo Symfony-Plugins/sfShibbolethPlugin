@@ -94,10 +94,13 @@ class sfShibbolethAuthActions extends sfActions
   // Shibboleth as well. In production the latter is done by redirecting
   // to the Shibboleth logout URL. If your Apache configuration uses
   // a different logout URL, you'll need to make the appropriate change
-  // in app.yml. 
+  // in app.yml. If the logout URL supports a URL to return the user to,
+  // take advantage of that by including a _RETURNTO_ placeholder
+  // in the URL you configure. 
 
   // In development this action purges the attributes we use for fake 
-  // shibboleth auth first, then goes to the home page. Keep in mind
+  // shibboleth auth first, then goes to the home page. It also attempts to
+  // send the user to an appropriate logout URL Keep in mind
   // that typical shibboleth webauth systems unfortunately do NOT send you
   // home, they just dump you on a useless external "goodbye" page somewhere.
   // But sending users home in dev is a good test of whether the Symfony-layer
