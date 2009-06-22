@@ -252,6 +252,22 @@ techniques first before reading further.
   the "fake Shibboleth" test users. This is extremely useful for developing
   Shibboleth-protected sites on your own workstation.
 
+  * By default, Symfony projects come with a .htaccess file that contains these
+  commented-out rules:
+  
+    # we skip all files with .something
+    #RewriteCond %{REQUEST_URI} \..+$
+    #RewriteCond %{REQUEST_URI} !\.html$
+    #RewriteRule .* - [L]
+
+  With these rules commented out, at least some Apache Shibboleth configurations will not work properly. This is because the user is redirected to URLs like this one during their return journey to your site after being authenticated:
+  
+  https://yourschool.edu/Shibboleth.sso/SAML/POST
+  
+  If `mod_rewrite` rewrites this URL to send the user to Symfony instead, Shibboleth authentication cannot be completed. 
+  
+  Solve this problem by either (a) uncommenting the rules above, which are also nice for convincing Symfony to leave other standalone scripts and asset files alone and allow them to be directly served, or (b) writing alternate rules of your own which specifically leave URIs containing `Shibboleth.sso` alone.
+    
   * You're ready to go. However, there are two more major features
   you will almost certainly want, so I suggest that you keep reading.
 
