@@ -22,6 +22,7 @@
  */
 class sfShibbolethFilter extends sfFilter
 {
+  private static $testNames = array("noshibsuperadmin", "noshibadmin", "noshibeditor1", "noshibeditor2", "noshibnormal");
   public function execute ($filterChain)
   {
 		$context = $this->getContext();
@@ -40,6 +41,15 @@ class sfShibbolethFilter extends sfFilter
       // If we let these linger they will screw up logout
       $sfUser->setAttribute('sfShibboleth_fake_user', null);
       $sfUser->setAttribute('sfShibboleth_fake_display_name', null);
+    }
+
+    if (!sfConfig::get('app_sfShibboleth_fake', false))
+    {
+      // I considered just rejecting the noshib prefix, but that is actually a somewhat common name
+      if (in_array($_SERVER['REMOTE_USER'], self::$testNames))
+      {
+        throw new sfException("Attempt to log in with a noshib test account in a Shibbolized environment");
+      } 
     }
 
     if (sfConfig::get('app_sfShibboleth_shim', false))
