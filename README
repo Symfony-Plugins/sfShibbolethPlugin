@@ -153,26 +153,31 @@ techniques first before reading further.
             superadmin: superadmin
             fake: true
             fake_users:
-              superadmin:
+              noshibsuperadmin:
                 display_name: Super Admin
-              user1:
-                display_name: User One
-              user2:
-                display_name: User Two
-              user3:
-                display_name: User Three
-              user4:
-                display_name: User Four
-              user5:
-                display_name: User Five
-              user6:
-                display_name: User Six
-              user7:
-                display_name: User Seven
+              noshibadmin:
+                display_name: Admin
+              noshibeditor1:
+                display_name: Editor One
+              noshibeditor2:
+                display_name: Editor Two
+              noshibnormal:
+                display_name: Normal User
 
 
   sfShibbolethPlugin will offer a menu of these users when you log in
   via a development controller (that is, frontend_dev.php). 
+  
+  These users can be real users in your Shibbolized environment, or purely users who will
+  never be seen in your Shibbolized environment. In the latter case, you may be concerned
+  about forgetting to remove them from the system, which could lead to security problems
+  if someone registers one of those usernames later. As a convenience, sfShibbolethPlugin
+  will *never* talk to the following users when running in Shibbolized, non-fake mode:
+  
+  noshibsuperadmin, noshibadmin, noshibeditor1, noshibeditor2, noshibnormal
+  
+  Using these names for your fake-mode-only test accounts is a good answer to such security concerns.
+  (TODO: make this list configurable; consider whether these options are becoming unwieldy.)
 
   You should *never* enable "fake: true" on a production server. We
   recommend adding web/frontend_dev.php to your config/rsync_exclude.txt so
