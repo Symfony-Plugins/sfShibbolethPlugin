@@ -46,7 +46,7 @@ class sfShibbolethFilter extends sfFilter
     if (!sfConfig::get('app_sfShibboleth_fake', false))
     {
       // I considered just rejecting the noshib prefix, but that is actually a somewhat common name
-      if (in_array($_SERVER['REMOTE_USER'], self::$testNames))
+      if (isset($_SERVER['REMOTE_USER']) && (in_array($_SERVER['REMOTE_USER'], self::$testNames)))
       {
         throw new sfException("Attempt to log in with a noshib test account in a Shibbolized environment");
       } 
